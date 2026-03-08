@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ResumeForge — Build Your Perfect Resume</title>
+  <meta name="description" content="Create a stunning, professional resume in minutes with ResumeForge. Live preview, multiple templates, and one-click PDF export." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Playfair+Display:wght@700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+</head>
+<body>
+
+  <!-- ===== TOP NAV ===== -->
+  <header class="topbar">
+    <div class="topbar-brand">
+      <span class="brand-icon">⚡</span>
+      <span class="brand-name">ResumeForge</span>
+    </div>
+
+    <div class="template-switcher">
+      <span class="switcher-label">Template</span>
+      <button class="tpl-btn active" data-template="modern" id="tpl-modern">Modern</button>
+      <button class="tpl-btn" data-template="classic" id="tpl-classic">Classic</button>
+      <button class="tpl-btn" data-template="minimal" id="tpl-minimal">Minimal</button>
+    </div>
+
+    <div class="topbar-actions">
+      <button class="btn-secondary" id="clear-btn">🗑 Clear</button>
+      <button class="btn-primary" id="download-btn">⬇ Download PDF</button>
+    </div>
+  </header>
+
+  <!-- ===== MAIN LAYOUT ===== -->
+  <main class="app-layout">
+
+    <!-- LEFT: EDITOR PANEL -->
+    <aside class="editor-panel">
+      <!-- Tab Navigation -->
+      <nav class="tab-nav" role="tablist">
+        <button class="tab-btn active" data-tab="personal"  role="tab" aria-selected="true">👤 Personal</button>
+        <button class="tab-btn" data-tab="summary"   role="tab">📝 Summary</button>
+        <button class="tab-btn" data-tab="experience" role="tab">💼 Experience</button>
+        <button class="tab-btn" data-tab="education"  role="tab">🎓 Education</button>
+        <button class="tab-btn" data-tab="skills"     role="tab">⚙ Skills</button>
+        <button class="tab-btn" data-tab="projects"   role="tab">🚀 Projects</button>
+        <button class="tab-btn" data-tab="certs"      role="tab">🏆 Certifications</button>
+      </nav>
+
+      <!-- Tab Content -->
+      <div class="tab-content">
+
+        <!-- PERSONAL INFO -->
+        <section class="tab-pane active" id="tab-personal">
+          <h2 class="section-title">Personal Information</h2>
+
+          <!-- Photo Upload -->
+          <div class="photo-upload-area" id="photo-upload-area">
+            <input type="file" id="photoInput" accept="image/*" hidden />
+            <div class="photo-placeholder" id="photo-placeholder">
+              <div class="photo-upload-icon">🖼</div>
+              <span>Click to upload photo</span>
+              <span class="photo-hint">JPG, PNG or GIF · max 5 MB</span>
+            </div>
+            <div class="photo-preview-wrap" id="photo-preview-wrap" style="display:none;">
+              <img id="photo-preview-img" src="" alt="Profile photo" />
+              <button type="button" class="photo-remove-btn" id="photo-remove-btn" title="Remove photo">✕</button>
+            </div>
+          </div>
+
+          <div class="form-grid">
+            <div class="field-group full">
+              <label for="fullName">Full Name</label>
+              <input type="text" id="fullName" placeholder="e.g. Priya Sharma" />
+            </div>
+            <div class="field-group full">
+              <label for="jobTitle">Job Title / Role</label>
+              <input type="text" id="jobTitle" placeholder="e.g. Senior Software Engineer" />
+            </div>
+            <div class="field-group">
+              <label for="email">Email</label>
+              <input type="email" id="email" placeholder="priya@example.com" />
+            </div>
+            <div class="field-group">
+              <label for="phone">Phone</label>
+              <input type="tel" id="phone" placeholder="+91 98765 43210" />
+            </div>
+            <div class="field-group">
+              <label for="location">Location</label>
+              <input type="text" id="location" placeholder="Mumbai, India" />
+            </div>
+            <div class="field-group">
+              <label for="website">Website / Portfolio</label>
+              <input type="url" id="website" placeholder="https://priya.dev" />
+            </div>
+            <div class="field-group">
+              <label for="linkedin">LinkedIn</label>
+              <input type="url" id="linkedin" placeholder="linkedin.com/in/priya" />
+            </div>
+            <div class="field-group">
+              <label for="github">GitHub</label>
+              <input type="url" id="github" placeholder="github.com/priya" />
+            </div>
+          </div>
+        </section>
+
+        <!-- SUMMARY -->
+        <section class="tab-pane" id="tab-summary">
+          <h2 class="section-title">Professional Summary</h2>
+          <div class="field-group full">
+            <label for="summary">Write a compelling 2–4 sentence summary</label>
+            <textarea id="summary" rows="6" placeholder="Results-driven software engineer with 5+ years of experience building scalable web applications..."></textarea>
+          </div>
+          <p class="tip-text">💡 Tip: Tailor this to match the job description for best results.</p>
+        </section>
+
+        <!-- EXPERIENCE -->
+        <section class="tab-pane" id="tab-experience">
+          <h2 class="section-title">Work Experience</h2>
+          <div id="exp-list"></div>
+          <button class="add-btn" id="add-exp">+ Add Experience</button>
+        </section>
+
+        <!-- EDUCATION -->
+        <section class="tab-pane" id="tab-education">
+          <h2 class="section-title">Education</h2>
+          <div id="edu-list"></div>
+          <button class="add-btn" id="add-edu">+ Add Education</button>
+        </section>
+
+        <!-- SKILLS -->
+        <section class="tab-pane" id="tab-skills">
+          <h2 class="section-title">Skills</h2>
+          <p class="tip-text">Group your skills by category for best readability.</p>
+          <div id="skill-list"></div>
+          <button class="add-btn" id="add-skill">+ Add Skill Category</button>
+        </section>
+
+        <!-- PROJECTS -->
+        <section class="tab-pane" id="tab-projects">
+          <h2 class="section-title">Projects</h2>
+          <div id="proj-list"></div>
+          <button class="add-btn" id="add-proj">+ Add Project</button>
+        </section>
+
+        <!-- CERTIFICATIONS -->
+        <section class="tab-pane" id="tab-certs">
+          <h2 class="section-title">Certifications</h2>
+          <div id="cert-list"></div>
+          <button class="add-btn" id="add-cert">+ Add Certification</button>
+        </section>
+
+      </div><!-- /tab-content -->
+    </aside>
+
+    <!-- RIGHT: LIVE PREVIEW -->
+    <section class="preview-panel" aria-label="Resume Preview">
+      <div class="preview-toolbar">
+        <span class="preview-label">Live Preview</span>
+        <div class="zoom-controls">
+          <button id="zoom-out" title="Zoom Out">−</button>
+          <span id="zoom-level">90%</span>
+          <button id="zoom-in" title="Zoom In">+</button>
+        </div>
+      </div>
+
+      <div class="preview-scroll">
+        <div class="preview-wrapper" id="preview-wrapper">
+          <div class="resume-paper modern" id="resume-preview">
+            <!-- rendered by JS -->
+            <div class="empty-state">
+              <div class="empty-icon">📄</div>
+              <p>Start filling in your details on the left<br/>and your resume will appear here!</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ===== DYNAMIC ENTRY TEMPLATES (hidden) ===== -->
+  <template id="tpl-exp-entry">
+    <div class="entry-card" data-type="exp">
+      <div class="entry-header">
+        <span class="entry-num">Experience #<span class="entry-idx"></span></span>
+        <button class="remove-btn" title="Remove">✕</button>
+      </div>
+      <div class="form-grid">
+        <div class="field-group full"><label>Job Title</label><input type="text" class="exp-title" placeholder="Software Engineer" /></div>
+        <div class="field-group"><label>Company</label><input type="text" class="exp-company" placeholder="Google" /></div>
+        <div class="field-group"><label>Location</label><input type="text" class="exp-loc" placeholder="Bengaluru, India" /></div>
+        <div class="field-group"><label>Start Date</label><input type="text" class="exp-start" placeholder="Jan 2022" /></div>
+        <div class="field-group"><label>End Date</label><input type="text" class="exp-end" placeholder="Present" /></div>
+        <div class="field-group full"><label>Description (use • for bullet points)</label><textarea class="exp-desc" rows="4" placeholder="• Led a team of 5 engineers to deliver a product 2 weeks ahead of schedule&#10;• Reduced API latency by 40% through caching strategies"></textarea></div>
+      </div>
+    </div>
+  </template>
+
+  <template id="tpl-edu-entry">
+    <div class="entry-card" data-type="edu">
+      <div class="entry-header">
+        <span class="entry-num">Education #<span class="entry-idx"></span></span>
+        <button class="remove-btn" title="Remove">✕</button>
+      </div>
+      <div class="form-grid">
+        <div class="field-group full"><label>Degree</label><input type="text" class="edu-degree" placeholder="B.Tech in Computer Science" /></div>
+        <div class="field-group"><label>Institution</label><input type="text" class="edu-inst" placeholder="IIT Bombay" /></div>
+        <div class="field-group"><label>Location</label><input type="text" class="edu-loc" placeholder="Mumbai, India" /></div>
+        <div class="field-group"><label>Start Year</label><input type="text" class="edu-start" placeholder="2018" /></div>
+        <div class="field-group"><label>End Year</label><input type="text" class="edu-end" placeholder="2022" /></div>
+        <div class="field-group"><label>CGPA / Grade</label><input type="text" class="edu-grade" placeholder="8.9 / 10" /></div>
+      </div>
+    </div>
+  </template>
+
+  <template id="tpl-skill-entry">
+    <div class="entry-card" data-type="skill">
+      <div class="entry-header">
+        <span class="entry-num">Skill Category #<span class="entry-idx"></span></span>
+        <button class="remove-btn" title="Remove">✕</button>
+      </div>
+      <div class="form-grid">
+        <div class="field-group"><label>Category Name</label><input type="text" class="skill-cat" placeholder="Programming Languages" /></div>
+        <div class="field-group full"><label>Skills (comma-separated)</label><input type="text" class="skill-items" placeholder="JavaScript, TypeScript, Python, Go" /></div>
+      </div>
+    </div>
+  </template>
+
+  <template id="tpl-proj-entry">
+    <div class="entry-card" data-type="proj">
+      <div class="entry-header">
+        <span class="entry-num">Project #<span class="entry-idx"></span></span>
+        <button class="remove-btn" title="Remove">✕</button>
+      </div>
+      <div class="form-grid">
+        <div class="field-group"><label>Project Name</label><input type="text" class="proj-name" placeholder="ResumeForge" /></div>
+        <div class="field-group"><label>Tech Stack</label><input type="text" class="proj-tech" placeholder="React, Node.js, MongoDB" /></div>
+        <div class="field-group"><label>Demo URL</label><input type="url" class="proj-url" placeholder="https://github.com/..." /></div>
+        <div class="field-group"><label>Date</label><input type="text" class="proj-date" placeholder="Mar 2025" /></div>
+        <div class="field-group full"><label>Description</label><textarea class="proj-desc" rows="3" placeholder="• Built a full-stack resume builder with live preview and PDF export&#10;• Deployed on Vercel with 500+ users"></textarea></div>
+      </div>
+    </div>
+  </template>
+
+  <template id="tpl-cert-entry">
+    <div class="entry-card" data-type="cert">
+      <div class="entry-header">
+        <span class="entry-num">Certification #<span class="entry-idx"></span></span>
+        <button class="remove-btn" title="Remove">✕</button>
+      </div>
+      <div class="form-grid">
+        <div class="field-group"><label>Certification Name</label><input type="text" class="cert-name" placeholder="AWS Certified Developer" /></div>
+        <div class="field-group"><label>Issuing Organization</label><input type="text" class="cert-org" placeholder="Amazon Web Services" /></div>
+        <div class="field-group"><label>Date Issued</label><input type="text" class="cert-date" placeholder="June 2024" /></div>
+        <div class="field-group"><label>Credential URL</label><input type="url" class="cert-url" placeholder="https://aws.amazon.com/verify/..." /></div>
+      </div>
+    </div>
+  </template>
+
+  <script src="app.js"></script>
+</body>
+</html>
