@@ -543,9 +543,19 @@ document.getElementById('download-btn').addEventListener('click', async () => {
   btn.textContent = '⏳ Generating…';
   btn.disabled = true;
 
+  // Save state
+  const previewScroll = document.querySelector('.preview-scroll');
+  const savedScrollTop = previewScroll ? previewScroll.scrollTop : 0;
+  if (previewScroll) previewScroll.scrollTop = 0;
+
   // Temporarily remove zoom for accurate rendering
   const savedTransform = previewWrap.style.transform;
+  const savedMarginBottom = previewWrap.style.marginBottom;
   previewWrap.style.transform = 'none';
+  previewWrap.style.marginBottom = '0px';
+
+  // Allow the DOM to reflow before capturing
+  await new Promise(r => setTimeout(r, 50));
 
   const name = (state.personal.fullName || 'resume').replace(/\s+/g, '_').toLowerCase();
 
@@ -555,7 +565,9 @@ document.getElementById('download-btn').addEventListener('click', async () => {
       scale: 2,
       useCORS: true,
       logging: false,
-      backgroundColor: '#ffffff'
+      backgroundColor: '#ffffff',
+      windowHeight: preview.scrollHeight,
+      scrollY: 0
     });
 
     // 2. Convert canvas to JPEG data URL
@@ -575,15 +587,38 @@ document.getElementById('download-btn').addEventListener('click', async () => {
 
     const pdf = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
 
+    const bottomMarginMm = 15;
+    const topMarginMm = 15;
+
     let remainingHeight = imgHeightMm;
     let yOffset = 0;
+    let pagesDone = 0;
+
     while (remainingHeight > 0) {
-      pdf.addImage(imgData, 'JPEG', 0, yOffset, imgWidthMm, imgHeightMm);
-      remainingHeight -= A4_H_MM;
-      if (remainingHeight > 0) {
+      if (pagesDone > 0) {
         pdf.addPage();
-        yOffset -= A4_H_MM;
       }
+
+      pdf.addImage(imgData, 'JPEG', 0, yOffset, imgWidthMm, imgHeightMm);
+      
+      pdf.setFillColor(255, 255, 255);
+
+      if (pagesDone === 0) {
+        // Page 1: Only draw bottom margin
+        pdf.rect(0, A4_H_MM - bottomMarginMm, A4_W_MM, bottomMarginMm, 'F');
+        const consumed = A4_H_MM - bottomMarginMm;
+        remainingHeight -= consumed;
+        yOffset = topMarginMm - consumed; // Prepare offset for Page 2
+      } else {
+        // Page 2 onwards: Draw top and bottom margins to hide overlap
+        pdf.rect(0, 0, A4_W_MM, topMarginMm, 'F');
+        pdf.rect(0, A4_H_MM - bottomMarginMm, A4_W_MM, bottomMarginMm, 'F');
+        const consumed = A4_H_MM - topMarginMm - bottomMarginMm;
+        remainingHeight -= consumed;
+        yOffset -= consumed; // Prepare offset for subsequent pages
+      }
+
+      pagesDone++;
     }
 
     // 4. Try direct download first, fall back to opening in new tab
@@ -610,7 +645,10 @@ document.getElementById('download-btn').addEventListener('click', async () => {
     console.error('PDF Generation Error:', e);
     alert('PDF generation failed. Error: ' + e.message);
   } finally {
+    // Restore state
     previewWrap.style.transform = savedTransform;
+    previewWrap.style.marginBottom = savedMarginBottom;
+    if (previewScroll) previewScroll.scrollTop = savedScrollTop;
     btn.textContent = originalText;
     btn.disabled = false;
   }
